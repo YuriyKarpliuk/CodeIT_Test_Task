@@ -27,7 +27,7 @@ public class UserServiceImpl implements UserService {
     private final ObjectMapper objectMapper;
 
     @Override
-    public ResponseEntity<?> updateAllUserFields(Long id, UserRequest userRequest) throws NotFoundException {
+    public ResponseEntity<?> updateAllUserFields(Long id, UserRequest userRequest) {
         User user = userRepository.findById(id).orElseThrow(() -> new NotFoundException(String.format("User not found for this id: %s", id)));
         user.setFirstName(userRequest.getFirstName());
         user.setLastName(userRequest.getLastName());
@@ -38,7 +38,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public ResponseEntity<?> updateUserFields(Long id, Map<String, Object> fields) throws NotFoundException {
+    public ResponseEntity<?> updateUserFields(Long id, Map<String, Object> fields) {
         User user = userRepository.findById(id).orElseThrow(() -> new NotFoundException(String.format("User not found for this id: %s", id)));
         fields.forEach((key, value) -> {
             Field field = ReflectionUtils.findField(User.class, key);
