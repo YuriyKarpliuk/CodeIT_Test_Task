@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.Data;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.util.ReflectionUtils;
 import yuriy.karpliuk.codeit_test_task.dto.request.UserRequest;
 import yuriy.karpliuk.codeit_test_task.dto.response.MessageResponse;
 import yuriy.karpliuk.codeit_test_task.dto.response.UserResponse;
@@ -14,11 +13,9 @@ import yuriy.karpliuk.codeit_test_task.exception.NotValidDateRange;
 import yuriy.karpliuk.codeit_test_task.repository.UserRepository;
 import yuriy.karpliuk.codeit_test_task.service.UserService;
 
-import java.lang.reflect.Field;
 import java.time.LocalDate;
 import java.util.stream.Collectors;
 import java.util.List;
-import java.util.Map;
 
 @Service
 @Data
@@ -38,14 +35,20 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public ResponseEntity<?> updateUserFields(Long id, Map<String, Object> fields) {
+    public ResponseEntity<?> updateUserFields(Long id, UserRequest userRequest) {
         User user = userRepository.findById(id).orElseThrow(() -> new NotFoundException(String.format("User not found for this id: %s", id)));
-        fields.forEach((key, value) -> {
-            Field field = ReflectionUtils.findField(User.class, key);
-            field.setAccessible(true);
-            Object convertedValue = objectMapper.convertValue(value, field.getType());
-            ReflectionUtils.setField(field, user, convertedValue);
-        });
+        if (userRequest.getFirstName() != null) {
+            user.setFirstName(userRequest.getFirstName());
+        }
+        if (userRequest.getLastName() != null) {
+            user.setLastName(userRequest.getLastName());
+        }
+        if (userRequest.getPhoneNumber() != null) {
+            user.setPhoneNumber(userRequest.getPhoneNumber());
+        }
+        if (userRequest.getBirthDate() != null) {
+            user.setBirthDate(userRequest.getBirthDate());
+        }
 
         userRepository.save(user);
         return ResponseEntity.ok(new MessageResponse(String.format("User with id: %s updated successfully!", id)));
@@ -57,15 +60,7 @@ public class UserServiceImpl implements UserService {
             throw new NotValidDateRange();
         }
 
-        List<UserResponse> userResponses = userRepository.getUsersByBirthDateBetween(startDate, endDate)
-                .stream()
-                .map(u -> UserResponse.builder()
-                        .firstName(u.getFirstName())
-                        .lastName(u.getLastName())
-                        .birthDate(u.getBirthDate())
-                        .phoneNumber(u.getPhoneNumber())
-                        .build())
-                .collect(Collectors.toList());
+        List<UserResponse> userResponses = userRepository.getUsersByBirthDateBetween(startDate, endDate).stream().map(u -> UserResponse.builder().firstName(u.getFirstName()).lastName(u.getLastName()).birthDate(u.getBirthDate()).phoneNumber(u.getPhoneNumber()).build()).collect(Collectors.toList());
 
         return ResponseEntity.ok(userResponses);
     }

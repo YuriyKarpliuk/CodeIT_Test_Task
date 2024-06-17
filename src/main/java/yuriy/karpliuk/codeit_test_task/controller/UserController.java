@@ -9,7 +9,6 @@ import yuriy.karpliuk.codeit_test_task.exception.NotValidDateRange;
 import yuriy.karpliuk.codeit_test_task.service.UserService;
 
 import java.time.LocalDate;
-import java.util.Map;
 
 
 @RestController
@@ -24,8 +23,8 @@ public class UserController {
     }
 
     @PatchMapping("/{id}")
-    public ResponseEntity<?> updateUserFields(@PathVariable Long id, @Valid @RequestBody Map<String, Object> fields) {
-        return userService.updateUserFields(id, fields);
+    public ResponseEntity<?> updateUserFields(@PathVariable Long id, @Valid @RequestBody UserRequest userRequest) {
+        return userService.updateUserFields(id, userRequest);
     }
 
     @GetMapping
